@@ -872,7 +872,8 @@
 				<configuration>
 					<argLine>-Xmx2G -Djava.net.preferIPv4Stack=true
 						-Dio.netty.leakDetection.level=paranoid</argLine>
-					<redirectTestOutputToFile>${redirectTestOutputToFile}</redirectTestOutputToFile>
+					<redirect
+OutputToFile>${redirectTestOutputToFile}</redirectTestOutputToFile>
 					<forkCount>${forkCount.variable}</forkCount>
 					<reuseForks>false</reuseForks>
 					<trimStackTrace>false</trimStackTrace>
