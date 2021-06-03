@@ -32,7 +32,6 @@
   <name>Apache BookKeeper :: Dist (Bkctl)</name>
 
   <dependencies>
-    <!-- bookkeeper.tools (new CLI) -->
     <dependency>
       <groupId>org.apache.bookkeeper</groupId>
       <artifactId>bookkeeper-tools</artifactId>

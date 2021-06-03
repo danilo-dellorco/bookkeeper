@@ -23,12 +23,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
-import io.grpc.stub.StreamObserver;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
 import org.apache.bookkeeper.clients.exceptions.ClientException;
 import org.apache.bookkeeper.clients.exceptions.NamespaceNotFoundException;
 import org.apache.bookkeeper.clients.impl.internal.api.RootRangeClient;
@@ -36,6 +34,10 @@ import org.apache.bookkeeper.stream.proto.storage.DeleteNamespaceRequest;
 import org.apache.bookkeeper.stream.proto.storage.DeleteNamespaceResponse;
 import org.apache.bookkeeper.stream.proto.storage.RootRangeServiceGrpc.RootRangeServiceImplBase;
 import org.apache.bookkeeper.stream.proto.storage.StatusCode;
+
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
 
 /**
  * Test Case for {@link RootRangeClientImpl}: DeleteNamespace.
