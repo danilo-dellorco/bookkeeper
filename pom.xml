@@ -47,16 +47,18 @@
 		<url>https://builds.apache.org/job/bookkeeper-master</url>
 	</ciManagement>
 	<modules>
+		<!-- 
 		<module>buildtools</module>
 		<module>circe-checksum</module>
 		<module>bookkeeper-common</module>
 		<module>bookkeeper-common-allocator</module>
 		<module>stats</module>
-		<!-- TODO: move `bookkeeper-stats` and `bookkeeper-stats-providers` as 
-			submodules of `stats` -->
+
 		<module>bookkeeper-stats</module>
 		<module>bookkeeper-proto</module>
+		--> 
 		<module>bookkeeper-server</module>
+		<!-- 
 		<module>bookkeeper-benchmark</module>
 		<module>bookkeeper-stats-providers</module>
 		<module>bookkeeper-http</module>
@@ -67,7 +69,8 @@
 		<module>bookkeeper-dist</module>
 		<module>shaded</module>
 		<module>microbenchmarks</module>
-		<!--<module>tests</module> -->
+		-->
+		
 	</modules>
 	<mailingLists>
 		<mailingList>
