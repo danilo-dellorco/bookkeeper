@@ -1030,7 +1030,27 @@
 			</plugin>
 		</plugins>
 	</build>
+	
 	<profiles>
+		<profile>
+			<id>sonar</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<sonar.host.url>http://sonarcloud.io/</sonar.host.url>
+				<sonar.organization>danilo-dellorco</sonar.organization>
+				<sonar.projectKey>danilo-dellorco_bookkeeper</sonar.projectKey>
+				<sonar.projectName>bookkeeper</sonar.projectName>
+				<sonar.login>f2a3d0e3fca8186f21e004e1cd432791eaa5ea6b</sonar.login>
+				<sonar.language>java</sonar.language>
+				<sonar.java.source>11</sonar.java.source>
+				<sonar.java.file.suffixes>.java</sonar.java.file.suffixes>
+				<sonar.verbose>true</sonar.verbose>
+				<!-- Path to JaCoCo XML coverage reports -->
+				<!-- <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco-gen/jcs-coverage/file.xml</sonar.coverage.jacoco.xmlReportPaths> -->
+			</properties>
+		</profile>
 		<profile>
 			<!-- profile used by jenkins CI -->
 			<id>code-coverage</id>
