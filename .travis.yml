@@ -13,4 +13,4 @@ script:
   - mvn  "-Dtest=org/apache/bookkeeper/mytests/*Test" -DfailIfNoTests=false clean verify -e org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar -Dsonar.projectKey=danilo-dellorco_bookkeeper 
 
   # -Dsonar.host.url=https://sonarcloud.io
-  -e org.jacoco:jacoco-maven-plugin:prepare-agent
+  # -e org.jacoco:jacoco-maven-plugin:prepare-agent
