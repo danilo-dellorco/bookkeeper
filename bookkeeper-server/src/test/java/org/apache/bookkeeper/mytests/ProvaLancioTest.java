@@ -4,8 +4,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import org.apache.bookkeeper.bookie.LedgerDescriptor;
+import org.apache.bookkeeper.bookie.LedgerDescriptorImpl;
 import org.apache.bookkeeper.bookie.SortedLedgerStorage;
-
+import org.apache.bookkeeper.client.api.LedgerEntry;
 import org.junit.Test;
 
 import com.google.common.primitives.Bytes;
@@ -23,8 +25,9 @@ public class ProvaLancioTest {
 	@Test
 	public void dummyTest() throws IOException {
 		SortedLedgerStorage srl = new SortedLedgerStorage();
-		ByteBuf buf = Unpooled.wrappedBuffer(new byte[] { 0x0D, 0X0A });
-		srl.addEntry(buf);
+		Long id = 4000L;
+		ByteBuf ledger = LedgerDescriptor.createLedgerFenceEntry(id);
+		srl.addEntry(ledger);
 		int parameter = 5;
 		assertEquals(5, parameter);
 	}

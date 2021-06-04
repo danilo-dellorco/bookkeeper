@@ -52,7 +52,7 @@ public abstract class LedgerDescriptor {
         return new LedgerDescriptorReadOnlyImpl(ledgerId, ledgerStorage);
     }
 
-    static ByteBuf createLedgerFenceEntry(Long ledgerId) {
+    public static ByteBuf createLedgerFenceEntry(Long ledgerId) {
         ByteBuf bb = Unpooled.buffer(8 + 8);
         bb.writeLong(ledgerId);
         bb.writeLong(METAENTRY_ID_FENCE_KEY);
