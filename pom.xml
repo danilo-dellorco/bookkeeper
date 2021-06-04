@@ -70,7 +70,6 @@
 		<module>shaded</module>
 		<module>microbenchmarks</module>
 
-		
 	</modules>
 	<mailingLists>
 		<mailingList>
@@ -817,11 +816,13 @@
 					<artifactId>sonar-maven-plugin</artifactId>
 					<version>3.6.0.1398</version>
 				</plugin>
+
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
 					<version>0.8.4</version>
 				</plugin>
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>

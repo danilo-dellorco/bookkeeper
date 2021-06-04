@@ -4,10 +4,10 @@ jdk:
 
 addons:
   sonarcloud:
-  organization: danilo-dellorco
-  token: f2a3d0e3fca8186f21e004e1cd432791eaa5ea6b
+  organization: "danilo-dellorco"
+  token: "f2a3d0e3fca8186f21e004e1cd432791eaa5ea6b"
 
 script:
   # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
   #- mvn "-Dtest=org/apache/bookkeeper/mytests/*Test" -DfailIfNoTests=false clean verify sonar:sonar -Dsonar.projectKey=danilo-dellorco_bookkeeper # -e org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=FabianoVeglianti_bookkeeper
-  - mvn clean verify sonar:sonar -Dsonar.projectKey=danilo-dellorco_bookkeeper # -e org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=FabianoVeglianti_bookkeeper
+  - mvn "-Dtest=org/apache/bookkeeper/mytests/*Test" clean verify sonar:sonar -Dsonar.projectKey=danilo-dellorco_bookkeeper # -e org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=FabianoVeglianti_bookkeeper
