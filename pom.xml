@@ -1042,7 +1042,7 @@
 				<sonar.organization>danilo-dellorco</sonar.organization>
 				<sonar.projectKey>danilo-dellorco_bookkeeper</sonar.projectKey>
 				<sonar.projectName>bookkeeper</sonar.projectName>
-				<sonar.login>f2a3d0e3fca8186f21e004e1cd432791eaa5ea6b</sonar.login>
+				<sonar.login>e4d37704cd412c1af3d3adf98b7e3b12766ef48b</sonar.login>
 				<sonar.language>java</sonar.language>
 				<sonar.java.source>11</sonar.java.source>
 				<sonar.java.file.suffixes>.java</sonar.java.file.suffixes>
