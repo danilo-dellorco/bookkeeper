@@ -164,6 +164,7 @@ public class LedgerMetadataIndex implements Closeable {
                 log.debug("Set fenced ledger {}", ledgerId);
             }
         }
+       
 
         pendingLedgersUpdates.add(new SimpleEntry<Long, LedgerData>(ledgerId, newLedgerData));
         pendingDeletedLedgers.remove(ledgerId);

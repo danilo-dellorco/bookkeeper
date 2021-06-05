@@ -66,6 +66,7 @@ import org.slf4j.LoggerFactory;
 public class Cookie {
     private static final Logger LOG = LoggerFactory.getLogger(Cookie.class);
 
+
     static final int CURRENT_COOKIE_LAYOUT_VERSION = 4;
     private final int layoutVersion;
     private final String bookieId;

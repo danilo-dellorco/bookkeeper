@@ -175,6 +175,8 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<!-- PLugin del Ciclo di Build -->
 	<build>
 		<plugins>
 			<plugin>
@@ -214,27 +216,6 @@
 					</excludes>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>com.github.spotbugs</groupId>
-				<artifactId>spotbugs-maven-plugin</artifactId>
-			</plugin>
-
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.7</version>
-				<executions>
-					<!-- NOTE THAT AUTOMATIC REPORTING IS USELESS, AS THE SOURCE FILES OF 
-						jcs ARE NEEDED: -->
-					<!-- GENERATE THE REPORTS OFFLINE AS DESCRIBED IN jacocolibSnippets.txt -->
-					<execution>
-						<id>PrepareAgent</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-				 </executions>
-			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -265,63 +246,24 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.7</version>
+				<configuration>
+					<destFile>${sonar.jacoco.reportPath}</destFile>
+					<append>true</append>
+				</configuration>
+				<executions>
+					<execution>
+						<id>TheExecutionId</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
-	<profiles>
-		<profile>
-			<id>vertx-http-server</id>
-			<dependencies>
-				<dependency>
-					<groupId>org.apache.bookkeeper.http</groupId>
-					<artifactId>vertx-http-server</artifactId>
-					<version>${project.parent.version}</version>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>tls-certs</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.6.0</version>
-						<executions>
-							<execution>
-								<id>Generate Self-Signed Certificates</id>
-								<phase>generate-test-resources</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-								<configuration>
-									<workingDirectory>${basedir}/src/test/resources</workingDirectory>
-									<executable>${basedir}/src/test/resources/generateKeysAndCerts.sh</executable>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<!-- test profiles -->
-		<profile>
-			<id>skipBookKeeperServerTests</id>
-			<activation>
-				<property>
-					<name>skipBookKeeperServerTests</name>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<skipTests>true</skipTests>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>

@@ -30,9 +30,9 @@ public class ProvaLancioTest {
 		SortedLedgerStorage srl = new SortedLedgerStorage();
 		System.out.println(srl);
 		Long id = 4000L;
-		ByteBuf ledger = LedgerDescriptor.createLedgerFenceEntry(id);
+		//ByteBuf ledger = LedgerDescriptor.createLedgerFenceEntry(id);
 		EntryKey entry = new EntryKey();
-		System.out.println(ledger);
+		//System.out.println(ledger);
 		System.out.println(entry);
 		
 		int parameter = 5;
