@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>my_tests</artifactId>
-    <name>my_tests</name>
+    <artifactId>my-tests</artifactId>
+    <name>my-tests</name>
 
     <properties>
 		<!-- Report XML recuperato da Sonar nella directory ..../bookkeeper/my_tests//target/site/jacoco-aggregate/jacoco.xml -->

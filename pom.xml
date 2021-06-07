@@ -70,8 +70,7 @@
     <module>bookkeeper-dist</module> 
     <module>shaded</module>
     <module>microbenchmarks</module>
-    <!-- <module>tests</module> -->
-	<module>my-tests</module>
+	   <module>my-tests</module>
   </modules>
   <mailingLists>
     <mailingList>
