@@ -65,7 +65,5 @@ public class ReadCacheTest {
 	public void exceptionTest() {
 		exceptionRule.expect(IllegalArgumentException.class);
 		cache.put(-1, 0, entry);
-		
-
 	}
 }

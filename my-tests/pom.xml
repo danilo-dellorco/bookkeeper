@@ -9,10 +9,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>my-tests</artifactId>
-    <name>my-tests</name>
+    <artifactId>my_tests</artifactId>
+    <name>my_tests</name>
 
     <properties>
+		<!-- Report XML recuperato da Sonar nella directory ..../bookkeeper/my_tests//target/site/jacoco-aggregate/jacoco.xml -->
         <sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
@@ -20,7 +21,7 @@
         <dependency>
             <groupId>org.apache.bookkeeper</groupId>
             <artifactId>bookkeeper-server</artifactId>
-            <version>4.14.0</version>
+            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
 
@@ -47,4 +48,6 @@
             </plugin>
         </plugins>
     </build>
+
+
 </project>
