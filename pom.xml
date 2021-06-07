@@ -202,15 +202,14 @@
 	
 	<!-- SONAR -->
 	<sonar.host.url>http://sonarcloud.io</sonar.host.url>
-	<sonar.organization>jacopofabi</sonar.organization>
-	<!--<sonar.projectKey>jacopofabi_bookkeeper</sonar.projectKey>-->
+	<sonar.organization>danilo-dellorco</sonar.organization>
 	<sonar.projectName>bookkeeper</sonar.projectName>
-	<sonar.login>dc17a21664c89069c86c5352947fdc95506bced2</sonar.login>
+	<sonar.login>7ddce8d961f92cfb42a30d86c77f048c37c70fdf</sonar.login>
 	<sonar.language>java</sonar.language>
 	<sonar.java.source>11</sonar.java.source>
 	<sonar.java.file.suffixes>.java</sonar.java.file.suffixes>
 	<sonar.verbose>true</sonar.verbose>
-	<aggregate.report.dir>my_tests/target/site/jacoco-aggregate/jacoco.xml</aggregate.report.dir>
+	<aggregate.report.dir>my-tests/target/site/jacoco-aggregate/jacoco.xml</aggregate.report.dir>
 	<redirectTestOutputToFile>true</redirectTestOutputToFile>
 	
   </properties>
