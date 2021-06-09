@@ -82,7 +82,8 @@ public abstract class SetupBK {
     }
 
 
-    /**
+
+   /**
      * Crea una configurazione per un BookieServer a partire dalla configurazione base
      * @return configurazione per un BookieServer
      * @throws Exception
