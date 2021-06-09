@@ -174,7 +174,8 @@ public class LedgerHandle implements WriteHandle {
     private final OpStatsLogger clientChannelWriteWaitStats;
 
     LedgerHandle(ClientContext clientCtx,
-                 long ledgerId, Versioned<LedgerMetadata> versionedMetadata,
+                 long ledgerId,
+                 Versioned<LedgerMetadata> versionedMetadata,
                  BookKeeper.DigestType digestType, byte[] password,
                  EnumSet<WriteFlag> writeFlags)
             throws GeneralSecurityException, NumberFormatException {

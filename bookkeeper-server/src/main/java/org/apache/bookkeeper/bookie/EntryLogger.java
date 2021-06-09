@@ -523,7 +523,7 @@ public class EntryLogger {
      * @param entryLogId
      *          Entry Log File Id
      */
-    protected boolean removeEntryLog(long entryLogId) {
+    protected boolean removeEntryLog(long entryLogId) {	//TODO da testare
         removeFromChannelsAndClose(entryLogId);
         File entryLogFile;
         try {
@@ -539,7 +539,7 @@ public class EntryLogger {
         return true;
     }
 
-    private long getLastLogId(File dir) {
+    private long getLastLogId(File dir) {	//TODO da testare
         long id = readLastLogId(dir);
         // read success
         if (id > 0) {
@@ -593,7 +593,7 @@ public class EntryLogger {
         entryLogManager.flush();
     }
 
-    long addEntry(long ledger, ByteBuffer entry) throws IOException {
+    long addEntry(long ledger, ByteBuffer entry) throws IOException {					//TODO da testare
         return entryLogManager.addEntry(ledger, Unpooled.wrappedBuffer(entry), true);
     }
 
@@ -813,7 +813,7 @@ public class EntryLogger {
         }
     }
 
-    public ByteBuf internalReadEntry(long ledgerId, long entryId, long location, boolean validateEntry)
+    public ByteBuf internalReadEntry(long ledgerId, long entryId, long location, boolean validateEntry)		//TODO da testare
             throws IOException {
         long entryLogId = logIdForOffset(location);
         long pos = posForOffset(location);

@@ -31,4 +31,8 @@ import lombok.Data;
 public class Versioned<T> {
     T value;
     Version version;
+    
+    public T getValue() {
+    	return this.value;
+    }
 }

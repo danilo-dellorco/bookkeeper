@@ -226,7 +226,7 @@ public class BookKeeperAdmin implements AutoCloseable {
 
     @SneakyThrows
     public BookieServiceInfo getBookieServiceInfo(BookieId bookiedId)
-            throws BKException {
+            throws Exception {
         return FutureUtils.result(bkc.getMetadataClientDriver()
                 .getRegistrationClient().getBookieServiceInfo(bookiedId)).getValue();
     }

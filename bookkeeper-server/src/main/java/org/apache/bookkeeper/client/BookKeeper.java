@@ -407,6 +407,7 @@ public class BookKeeper implements org.apache.bookkeeper.client.api.BookKeeper {
      */
     @SuppressWarnings("deprecation")
     @VisibleForTesting
+	protected
     BookKeeper(ClientConfiguration conf,
                        ZooKeeper zkc,
                        EventLoopGroup eventLoopGroup,
