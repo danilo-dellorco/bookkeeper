@@ -30,7 +30,6 @@ public class ReadCacheTest {
 	public static int ENTRY_SIZE = 1024;					// Ogni entry viene ha dimensione 1024 byte
 	public static int MAX_ENTRIES = 10;						// Ogni cache può contenere al massimo 10 entry
 	public static int CACHE_SIZE = ENTRY_SIZE*MAX_ENTRIES;	// Massimo numero di byte che può contenere l'entry
-	public static UnpooledByteBufAllocator ALLOCATOR = UnpooledByteBufAllocator.DEFAULT;
 	
 	// Types of entries
 	public static ByteBuf valid_entry;
@@ -60,14 +59,17 @@ public class ReadCacheTest {
 	// Configuro l'ambiente di esecuzione istanziando una nuova ReadCache prima di ogni test.
 	@Before
 	public void configure() {
-		cache = new ReadCache(ALLOCATOR,CACHE_SIZE);
+		UnpooledByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
+		cache = new ReadCache(allocator,CACHE_SIZE);
 	}
+	
 	
 	// Chiudo la cache dopo aver eseguito tutti i test case
 	@AfterClass
 	public static void closeCache() {
 		cache.close();
 	}
+	
 	
     @Parameters
     public static Collection<ReadCacheParameters> getParameters() {
@@ -90,8 +92,6 @@ public class ReadCacheTest {
     
 	@Test
 	public void putTest() {
-		System.out.println("______________PUT TEST______________");
-		System.out.println(String.format("ledger: %d\nentry: %d\n", ledgerId,entryId));
 		
 		if (expectedException != null) {
 			exceptionRule.expect(expectedException);
@@ -102,6 +102,7 @@ public class ReadCacheTest {
 		assertEquals(ENTRY_SIZE, cache.size()); 		// Vediamo che la dimensione totale è data dalla dimensione dell'unica entry aggiunta
 	}
 
+	// TODO mettere in un file di test separato
 	@Test
 	public void getTest() {
         if(expectedException != null) {

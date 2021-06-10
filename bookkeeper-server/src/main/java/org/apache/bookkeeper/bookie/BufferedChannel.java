@@ -73,7 +73,7 @@ public class BufferedChannel extends BufferedReadChannel implements Closeable {
 
     private boolean closed = false;
 
-    // make constructor to be public for unit test
+    // //TODO costruttore utilizzato nel testing, non utilizziamo unpersistedBytesBound
     public BufferedChannel(ByteBufAllocator allocator, FileChannel fc, int capacity) throws IOException {
         // Use the same capacity for read and write buffers.
         this(allocator, fc, capacity, 0L);
