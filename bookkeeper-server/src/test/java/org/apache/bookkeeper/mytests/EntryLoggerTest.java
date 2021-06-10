@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import org.apache.bookkeeper.conf.TestBKConfiguration;
 import org.apache.bookkeeper.mytests.utils.SetupBK;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,7 +32,6 @@ public class EntryLoggerTest extends SetupBK {
 	private static String CONT = "test-cont";
 
     private EntryLogger entryLogger;
-    private ServerConfiguration baseConf = TestBKConfiguration.newServerConfiguration();
     private LedgerHandle ledgerHandle;
     private Long location;
     
@@ -75,7 +73,7 @@ public class EntryLoggerTest extends SetupBK {
         File testFolder = new File("/tmp/bk-data/current");
         testFolder.mkdirs();
 
-        entryLogger = new EntryLogger(baseConf);
+        entryLogger = new EntryLogger(super.baseConf);
 
 
 //        if (ledgerID == 1234L) {
