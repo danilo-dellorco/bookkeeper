@@ -825,6 +825,7 @@
         <version>${os-maven-plugin.version}</version>
       </extension>
     </extensions>
+    
     <plugins>
 	<plugin>
 		<groupId>org.sonarsource.scanner.maven</groupId>
