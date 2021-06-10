@@ -46,11 +46,11 @@ public class BufferedChannel extends BufferedReadChannel implements Closeable {
     /**
      * The buffer used to write operations.
      */
-    protected final ByteBuf writeBuffer;
+    public final ByteBuf writeBuffer;
     /**
      * The absolute position of the next write operation.
      */
-    protected volatile long position;
+    public volatile long position;
 
     /*
      * if unpersistedBytesBound is non-zero value, then after writing to

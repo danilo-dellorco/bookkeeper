@@ -2,11 +2,12 @@ package org.apache.bookkeeper.mytests;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.bookkeeper.bookie.storage.ldb.ReadCache;
-
+import org.apache.bookkeeper.mytests.parameters.ReadCacheParameters;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,11 +43,13 @@ public class ReadCacheTest {
 	ByteBuf entry;
 	Class<? extends Exception> expectedException;
 	
-	public ReadCacheTest(int ledgerId, int entryId, ByteBuf entry, Class<? extends Exception> expectedException) {
-		this.ledgerId = ledgerId;
-		this.entryId = entryId;
-		this.entry = entry;
-		this.expectedException = expectedException;
+	ReadCacheParameters input;
+	
+	public ReadCacheTest(ReadCacheParameters input) {
+		this.ledgerId = input.getLedgerId();
+		this.entryId = input.getEntryId();
+		this.entry = input.getEntry();
+		this.expectedException = input.getExpectedException();
 	}
 
 	// Permette di specificare l'eccezione attesa.
@@ -67,19 +70,20 @@ public class ReadCacheTest {
 	}
 	
     @Parameters
-    public static Collection<Object[]> data() {
+    public static Collection<ReadCacheParameters> getParameters() {
     	
 		// Setup of the entries
 		valid_entry = Unpooled.wrappedBuffer(new byte[ENTRY_SIZE]);
 		illegal_entry = Unpooled.wrappedBuffer(new byte[CACHE_SIZE+1]);
 		null_entry = null;
+        
+		List<ReadCacheParameters> testInputs = new ArrayList<>();
+		testInputs.add(new ReadCacheParameters(1,0,valid_entry,null));
+		testInputs.add(new ReadCacheParameters(0,1,illegal_entry,IndexOutOfBoundsException.class));
+		testInputs.add(new ReadCacheParameters(1,-1,null_entry,NullPointerException.class));
+		testInputs.add(new ReadCacheParameters(-1,1,valid_entry,IllegalArgumentException.class));
 		
-        return Arrays.asList(new Object[][] {
-                {1,0,valid_entry,null},
-                {0,1,illegal_entry,IndexOutOfBoundsException.class},
-                {1,-1,null_entry,NullPointerException.class},
-                {-1,1,valid_entry,IllegalArgumentException.class}
-        });
+		return testInputs;
     }
     
     
