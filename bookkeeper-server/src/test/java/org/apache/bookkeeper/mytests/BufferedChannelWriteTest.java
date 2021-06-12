@@ -32,7 +32,7 @@ import java.util.*;
 
 public class BufferedChannelWriteTest {
 	
-	private static final String TMP_DIR = "tmp";
+	private static final String TMP_DIR = "testTemp";
 	private static final String LOG_FILE = "BfcWriteFile";
 	private static final boolean DELETE_LOG = true; 		// Utilizzato per il debugging
 
