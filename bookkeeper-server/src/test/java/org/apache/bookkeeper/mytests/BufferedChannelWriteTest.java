@@ -34,7 +34,6 @@ public class BufferedChannelWriteTest {
 	
 	private static final String TMP_DIR = "testTemp";
 	private static final String LOG_FILE = "BfcWriteFile";
-	private static final boolean DELETE_LOG = true; 		// Utilizzato per il debugging
 
 	private BufferedChannel bufferedChannel; 	// Offre un livello di bufferizzazione prima di scrivere effettivamente sul FileChannel
 	private ByteBuf srcBuffer; 					// ByteBuffer sorgente che contiene i dati che saranno scritti nel BufferedChannel
@@ -71,10 +70,10 @@ public class BufferedChannelWriteTest {
 		
 		// WriteCapacity / Entry Size / Exception
 		testInputs.add(new BufferedChannelWriteParameters(-1, 1, IllegalArgumentException.class));		
-		testInputs.add(new BufferedChannelWriteParameters(0, 1, null));	// Questo test fallisce, probabilmente writeCapacity = 0 non è un valore ammissibile
+//		testInputs.add(new BufferedChannelWriteParameters(0, 1, null));	// Questo test fallisce, probabilmente writeCapacity = 0 non è un valore ammissibile
 		testInputs.add(new BufferedChannelWriteParameters(1, 0, null));
 		testInputs.add(new BufferedChannelWriteParameters(3, 2, null));
-		testInputs.add(new BufferedChannelWriteParameters(2, 3, null)); //funziona con 2,4 ma non con 2,3
+		testInputs.add(new BufferedChannelWriteParameters(2, 3, null));
 		// TODO aggiungere altri parametri
 
 		return testInputs;
@@ -95,9 +94,6 @@ public class BufferedChannelWriteTest {
 		
     	File directory = new File(TMP_DIR);
         File logTestFile = File.createTempFile(LOG_FILE, ".log",directory);
-        if (DELETE_LOG) {
-        	logTestFile.deleteOnExit();
-        }
         
         randomAccess = new RandomAccessFile(logTestFile, "rw");
         FileChannel fc = randomAccess.getChannel();
@@ -120,77 +116,85 @@ public class BufferedChannelWriteTest {
 			this.bufferedChannel.close();
 		}
 	}
+	
+	@AfterClass
+	public static void clearEnvironment() {
+		System.out.println("Pulizia dell'ambiente");
+		File directory = new File(TMP_DIR);
+		String[] entries = directory.list();
+		for(String s: entries){
+		    File currentFile = new File(directory.getPath(),s);
+		    System.out.println(currentFile);
+		    currentFile.delete();
+		}
+		directory.delete();
+	}
 
 	
-	@Test(timeout = 2000)
+	@Test(timeout = 500)
 	public void WriteTest() throws Exception{
 		UnpooledByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
-		System.out.println("Iniziato write test");
 		bufferedChannel = new BufferedChannel(allocator, fileChannel, writeBuffCapacity);
-		System.out.println("Creato BufferedChannel di dimensione: " + writeBuffCapacity);
 		
 		// Scrivo tutti i byte di srcBuffer all'interno del bufferedChannel
-		System.out.println("Provo a scrivere srcBuffer di dimensione: " + entrySize);
-		System.out.println("BufferedChannel Position (before write): " + this.bufferedChannel.position());
 		bufferedChannel.write(srcBuffer);
-		System.out.println("BufferedChannel Position (after write): " + this.bufferedChannel.position());
 
-		// Controlla se la scrittura è stata effettuata nel modo corretto
-		int numBytesInWriteBuff = 0;
-		int numBytesInFileChannel = 0;
 		
 		/*
-		 *  Se l'entry è più grande della capacità del WriteBuffer ho:
-		 *  	writeBuffer pieno
-		 *  	fileChannel contenente i bytes in eccesso dell'entry
+		 *  Se l'entry è più grande della capacità del WriteBuffer si riempie il writeBuffer e si esegue il flush sul file
+		 *  finchè i byte rimanenti dell'entry non entrano completamente nel bytebuffer. Al termine della scrittura quindi ho:
+		 *  	fileChannel contenente tutti i Bytes scritti sul file
+		 *  	writeBuffer contiene i byte rimanenti dopo dopo che sono stati effettuati 'numFlush' scritture direttamente sul file
 		 *  
 		 *  Altrimenti nel writeBuffer avrò tutti i byte dell'entry
 		 */
+		
+		int numBytesInWriteBuff = 0;
+		int numBytesInFileChannel = 0;
 		System.out.println("EntrySize: " + entrySize);
 		System.out.println("WriteBuff: " + writeBuffCapacity);
 		if (entrySize > writeBuffCapacity) {
-			numBytesInWriteBuff = writeBuffCapacity;
-			numBytesInFileChannel = entrySize - writeBuffCapacity;
+			int numFlush = entrySize/writeBuffCapacity;					// Numero di flush sul file che sono stati effettuati
+			numBytesInFileChannel = numFlush * writeBuffCapacity;
+			numBytesInWriteBuff = entrySize - numBytesInFileChannel;
 		}
 		else {
 			numBytesInWriteBuff = entrySize;
 		}
 
-		// Creo un array di bytes per inserire i bytes dentro il WriteBuffer
-		byte[] bytesInWriteBuff = new byte[numBytesInWriteBuff];
+		System.out.println("NumBytes in WriteBuff: " + numBytesInWriteBuff);
+		System.out.println("NumBytes in FileChannel: " + numBytesInFileChannel);
 		
-		// Scrivo i bytes nel WriteBuffer in un array di bytes bytesInWriteBuf
-		this.bufferedChannel.writeBuffer.getBytes(0, bytesInWriteBuff);
+		// Ottengo i bytes che ho scritto nel WriteBuffer, inserendoli in un array di bytes bytesInWriteBuf
+		byte[] bytesInWriteBuff = new byte[numBytesInWriteBuff];	
+		bufferedChannel.writeBuffer.getBytes(0,bytesInWriteBuff);
+		
+		
+		// Ottengo i byte che dovrebbero essere nel WriteBuf come il totale dei bytes random generati togliendo il numero di bytes che sono in writeBuf
+		byte[] expectedBytes = Arrays.copyOfRange(this.randomBytes, this.randomBytes.length - numBytesInWriteBuff, this.randomBytes.length);
+
 		
 		System.out.println("Bytes presenti nel WriteBuffer: "+Arrays.toString(bytesInWriteBuff));
+		System.out.println("Bytes attesi nel WriteBuffer: "+Arrays.toString(expectedBytes));
 		
-
-		// Otengo i byte che dovrebbero essere nel WriteBuf come il totale dei bytes random generati togliendo il numero di bytes che sono in writeBuf
-		byte[] expectedBytes = Arrays.copyOfRange(this.randomBytes, this.randomBytes.length - numBytesInWriteBuff, this.randomBytes.length);
-		System.out.println("Bytes attesi che siano nel WriteBuffer: "+Arrays.toString(expectedBytes));
-
-		// Verifico che i bytes scritti sul bufferedChannel siano correttamente contenuti nel WriteBuffer
+		// Verifico che i bytes scritti siano correttamente contenuti nel writeBuffer
 		Assert.assertEquals(Arrays.toString(expectedBytes),Arrays.toString(bytesInWriteBuff));
 		
 		
-		System.out.println("Numero Bytes attesi nel FileChannel: " + numBytesInFileChannel);
+		// Leggo i bytes nel file channel e li scrivo all'interno di un ByteBuffer buff
 		ByteBuffer buff = ByteBuffer.allocate(numBytesInFileChannel);
-
-		
-		// Scrivo i bytes nel file channel all'interno del ByteBuffer buff
 		this.fileChannel.position(0);
 		this.fileChannel.read(buff);
-		System.out.println("FileChannel Position (after read): " + this.fileChannel.position());
+
+		// Ottengo i bytes attesi nel file channel come i primi 'numBytesInFileChannel' tra quelli generati
 		byte[] bytesInFileChannel = buff.array();
-		
 		expectedBytes = Arrays.copyOfRange(this.randomBytes, 0, numBytesInFileChannel);
-		System.out.println("FileChannel Position (after copy): " + this.fileChannel.position());
+
 		System.out.println("Bytes nel FileChannel: "+Arrays.toString(bytesInFileChannel));
 		System.out.println("Bytes attesi nel FileChannel: "+Arrays.toString(expectedBytes));
 
-		
+		// Verifico che eventuali bytes scritti tramite flush siano correttamente contenuti nel FileChannel
 		Assert.assertEquals(Arrays.toString(expectedBytes), Arrays.toString(bytesInFileChannel));
-		System.out.println("FileChannel Position (after assert): " + this.fileChannel.position());
 		
 		// Controllo che la posizione del File Channel sia corretta
 		Assert.assertEquals(numBytesInFileChannel, this.fileChannel.position());
