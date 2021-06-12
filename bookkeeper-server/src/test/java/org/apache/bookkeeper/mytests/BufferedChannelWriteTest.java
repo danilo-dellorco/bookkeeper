@@ -35,9 +35,6 @@ public class BufferedChannelWriteTest {
 	private static final String TMP_DIR = "tmp";
 	private static final String LOG_FILE = "BfcWriteFile";
 	private static final boolean DELETE_LOG = true; 		// Utilizzato per il debugging
-	
-	private static final int ENTRY_SIZE = 4;
-	private static final int WRITE_BUF_CAPACITY = 8;
 
 	private BufferedChannel bufferedChannel; 	// Offre un livello di bufferizzazione prima di scrivere effettivamente sul FileChannel
 	private ByteBuf srcBuffer; 					// ByteBuffer sorgente che contiene i dati che saranno scritti nel BufferedChannel
@@ -48,26 +45,36 @@ public class BufferedChannelWriteTest {
 	private FileChannel fileChannel; 			// Canale per leggere, scrivere e manipolare i file.
 	private RandomAccessFile randomAccess;		// File utilizzato per istanziare il FileChannel
 	private byte[] randomBytes;					// Array di byte generato randomicamente per testare la scrittura
-
+	
+	
 	
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
+	
 
 	public BufferedChannelWriteTest(BufferedChannelWriteParameters testInput) {
+		
 		this.entrySize = testInput.getEntrySize();
 		this.writeBuffCapacity = testInput.getWriteBuffCapacity();
-		if (testInput.getExpectedException() != null) {
-			this.expectedException.expect(testInput.getExpectedException());
+		if (testInput.getExpectedException()!=null) {
+			expectedException.expect(testInput.getExpectedException());
 		}
+		System.out.println(String.format("\n\n========= Capacity: %d / EntrySize: %d ==========\n", this.writeBuffCapacity,this.entrySize));
 	}
 
 	@Parameterized.Parameters
 	public static Collection<BufferedChannelWriteParameters> getParameters() {
 		List<BufferedChannelWriteParameters> testInputs = new ArrayList<>();
-
-		testInputs.add(new BufferedChannelWriteParameters(ENTRY_SIZE, WRITE_BUF_CAPACITY, null));
-		testInputs.add(new BufferedChannelWriteParameters(WRITE_BUF_CAPACITY, ENTRY_SIZE, null));
+		
+//		Exception expected = new IllegalArgumentException("initialCapacity: -1 (expected>=0)");
+		
+		// WriteCapacity / Entry Size / Exception
+		testInputs.add(new BufferedChannelWriteParameters(-1, 1, IllegalArgumentException.class));		
+		testInputs.add(new BufferedChannelWriteParameters(0, 1, null));	// Questo test fallisce, probabilmente writeCapacity = 0 non è un valore ammissibile
+		testInputs.add(new BufferedChannelWriteParameters(1, 0, null));
+		testInputs.add(new BufferedChannelWriteParameters(3, 2, null));
+		testInputs.add(new BufferedChannelWriteParameters(2, 3, null)); //funziona con 2,4 ma non con 2,3
 		// TODO aggiungere altri parametri
 
 		return testInputs;
@@ -105,21 +112,20 @@ public class BufferedChannelWriteTest {
 	}
 
 	@After
-	public void clear() {
-		// Chiudo canali e file aperti
-		try {
+	public void clear() throws IOException {
+		// Chiudo canali e file aperti soltanto se sono stati effettivamente aperti
+		if (expectedException==null) {
 			this.fileChannel.close();
 			this.randomAccess.close();
 			this.bufferedChannel.close();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 
 	
-	@Test
-	public void WriteTest() throws Exception {
+	@Test(timeout = 2000)
+	public void WriteTest() throws Exception{
 		UnpooledByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
+		System.out.println("Iniziato write test");
 		bufferedChannel = new BufferedChannel(allocator, fileChannel, writeBuffCapacity);
 		System.out.println("Creato BufferedChannel di dimensione: " + writeBuffCapacity);
 		

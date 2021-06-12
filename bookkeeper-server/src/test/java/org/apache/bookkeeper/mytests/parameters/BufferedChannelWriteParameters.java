@@ -1,5 +1,7 @@
 package org.apache.bookkeeper.mytests.parameters;
 
+import io.netty.buffer.UnpooledByteBufAllocator;
+
 public class BufferedChannelWriteParameters {
     private int entrySize;
     private int writeBuffCapacity;
@@ -11,14 +13,13 @@ public class BufferedChannelWriteParameters {
      * @param writeBuffCapacity dimensione del buffer di scrittura
      * @param buffChanCapacity capacità del BufferChannel
      */
-    public BufferedChannelWriteParameters(int entrySize, int writeBuffCapacity, Class<? extends Exception> expectedException) {
-    	this.entrySize = entrySize;
+    public BufferedChannelWriteParameters( int writeBuffCapacity, int entrySize, Class<? extends Exception> expectedException) {
         this.writeBuffCapacity = writeBuffCapacity;
+        this.entrySize = entrySize;
         this.expectedException = expectedException;
     }
 
-
-    public int getWriteBuffCapacity() {
+	public int getWriteBuffCapacity() {
 		return writeBuffCapacity;
 	}
 
