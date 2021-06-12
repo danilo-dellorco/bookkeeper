@@ -66,16 +66,17 @@ public class BufferedChannelWriteTest {
 	public static Collection<BufferedChannelWriteParameters> getParameters() {
 		List<BufferedChannelWriteParameters> testInputs = new ArrayList<>();
 		
-//		Exception expected = new IllegalArgumentException("initialCapacity: -1 (expected>=0)");
-		
 		// WriteCapacity / Entry Size / Exception
 		testInputs.add(new BufferedChannelWriteParameters(-1, 1, IllegalArgumentException.class));		
-//		testInputs.add(new BufferedChannelWriteParameters(0, 1, null));	// Questo test fallisce, probabilmente writeCapacity = 0 non è un valore ammissibile
+		testInputs.add(new BufferedChannelWriteParameters(1, -1, NegativeArraySizeException.class));		
 		testInputs.add(new BufferedChannelWriteParameters(1, 0, null));
 		testInputs.add(new BufferedChannelWriteParameters(3, 2, null));
 		testInputs.add(new BufferedChannelWriteParameters(2, 3, null));
-		// TODO aggiungere altri parametri
-
+		testInputs.add(new BufferedChannelWriteParameters(3000, 2000, null));
+		testInputs.add(new BufferedChannelWriteParameters(2000, 3000, null));
+		
+		// Questo test fallisce, probabilmente writeCapacity = 0 non è un valore ammissibile ma non viene gestito correttamente durante la scrittura
+		// testInputs.add(new BufferedChannelWriteParameters(0, 1, null));	
 		return testInputs;
 	}
 
@@ -94,13 +95,11 @@ public class BufferedChannelWriteTest {
 		
     	File directory = new File(TMP_DIR);
         File logTestFile = File.createTempFile(LOG_FILE, ".log",directory);
+        logTestFile.deleteOnExit();
         
         randomAccess = new RandomAccessFile(logTestFile, "rw");
         FileChannel fc = randomAccess.getChannel();
-		
         this.fileChannel = fc;
-        System.out.println("FileChannel Position: " + this.fileChannel.position());
-		
 		
 		// Genero una nuova entry della dimensione specificata
 		this.srcBuffer = generateRandomEntry(this.entrySize);
@@ -111,23 +110,24 @@ public class BufferedChannelWriteTest {
 	public void clear() throws IOException {
 		// Chiudo canali e file aperti soltanto se sono stati effettivamente aperti
 		if (expectedException==null) {
-			this.fileChannel.close();
 			this.randomAccess.close();
 			this.bufferedChannel.close();
 		}
+		this.fileChannel.close();
 	}
 	
+	// Cancello la directory contenente i file temporanei
 	@AfterClass
 	public static void clearEnvironment() {
-		System.out.println("Pulizia dell'ambiente");
 		File directory = new File(TMP_DIR);
 		String[] entries = directory.list();
 		for(String s: entries){
 		    File currentFile = new File(directory.getPath(),s);
-		    System.out.println(currentFile);
-		    currentFile.delete();
+		    boolean deleted = currentFile.delete();
+		    System.out.println(deleted);
 		}
 		directory.delete();
+		
 	}
 
 	

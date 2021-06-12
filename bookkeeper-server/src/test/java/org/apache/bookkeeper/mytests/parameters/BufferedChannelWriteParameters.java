@@ -1,6 +1,5 @@
 package org.apache.bookkeeper.mytests.parameters;
 
-import io.netty.buffer.UnpooledByteBufAllocator;
 
 public class BufferedChannelWriteParameters {
     private int entrySize;
