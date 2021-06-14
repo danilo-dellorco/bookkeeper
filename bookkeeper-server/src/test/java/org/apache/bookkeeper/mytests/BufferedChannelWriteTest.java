@@ -19,15 +19,6 @@ import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.util.*;
 
-/**
- * Write all the data in src to the {@link FileChannel}. Note that this function
- * can buffer or re-order writes based on the implementation. These writes will
- * be flushed to the disk only when flush() is invoked.
- *
- * @param src The source ByteBuffer which contains the data to be written.
- * @throws IOException if a write operation fails.
- */
-
 @RunWith(Parameterized.class)
 
 public class BufferedChannelWriteTest {
@@ -127,7 +118,6 @@ public class BufferedChannelWriteTest {
 		    System.out.println(deleted);
 		}
 		directory.delete();
-		
 	}
 
 	

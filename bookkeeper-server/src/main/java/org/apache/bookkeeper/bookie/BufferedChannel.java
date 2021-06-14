@@ -252,6 +252,7 @@ public class BufferedChannel extends BufferedReadChannel implements Closeable {
     public synchronized int read(ByteBuf dest, long pos, int length) throws IOException {
         long prevPos = pos;
         while (length > 0) {
+//        	System.out.println("length: "+length);
             // check if it is in the write buffer
             if (writeBuffer != null && writeBufferStartPosition.get() <= pos) {
                 int positionInBuffer = (int) (pos - writeBufferStartPosition.get());
@@ -269,14 +270,20 @@ public class BufferedChannel extends BufferedReadChannel implements Closeable {
                 break;
                 // first check if there is anything we can grab from the readBuffer
             } else if (readBufferStartPosition <= pos && pos < readBufferStartPosition + readBuffer.writerIndex()) {
+//            	DebugTools.waitInput();
+//            	System.out.println("pos: "+pos);
                 int positionInBuffer = (int) (pos - readBufferStartPosition);
                 int bytesToCopy = Math.min(readBuffer.writerIndex() - positionInBuffer, dest.writableBytes());
+//                System.out.println("positionInBuffer: "+positionInBuffer);
+//                System.out.println("bytesToCopy: " + bytesToCopy);
                 dest.writeBytes(readBuffer, positionInBuffer, bytesToCopy);
                 pos += bytesToCopy;
                 length -= bytesToCopy;
                 // let's read it
             } else {
                 readBufferStartPosition = pos;
+//                System.out.println("changed pos to:" + pos);
+//                DebugTools.waitInput();
 
                 int readBytes = fileChannel.read(readBuffer.internalNioBuffer(0, readCapacity),
                         readBufferStartPosition);
