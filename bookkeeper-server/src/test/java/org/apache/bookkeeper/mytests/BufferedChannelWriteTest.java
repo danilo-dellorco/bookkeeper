@@ -102,6 +102,7 @@ public class BufferedChannelWriteTest {
 		// Chiudo canali e file aperti soltanto se sono stati effettivamente aperti
 		if (expectedException==null) {
 			this.randomAccess.close();
+			this.bufferedChannel.clear();
 			this.bufferedChannel.close();
 		}
 		this.fileChannel.close();
