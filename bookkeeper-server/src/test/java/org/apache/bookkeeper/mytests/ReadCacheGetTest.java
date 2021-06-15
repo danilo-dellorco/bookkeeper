@@ -23,7 +23,7 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 
 
 @RunWith(Parameterized.class)
-public class ReadCacheTest {
+public class ReadCacheGetTest {
 	static ReadCache cache;
 	
 	// Cache settings
@@ -40,27 +40,48 @@ public class ReadCacheTest {
 	int ledgerId;
 	int entryId;
 	ByteBuf entry;
-	Class<? extends Exception> expectedException;
 	
-	ReadCacheParameters input;
 	
-	public ReadCacheTest(ReadCacheParameters input) {
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
+	
+	public ReadCacheGetTest(ReadCacheParameters input) {
 		this.ledgerId = input.getLedgerId();
 		this.entryId = input.getEntryId();
 		this.entry = input.getEntry();
-		this.expectedException = input.getExpectedException();
+		if (input.getExpectedException()!=null) {
+			expectedException.expect(input.getExpectedException());
+		}
 	}
+	
+    @Parameters
+    public static Collection<ReadCacheParameters> getParameters() {
+    	
+		// Setup of the entries
+		valid_entry = Unpooled.wrappedBuffer(new byte[ENTRY_SIZE]);
+		illegal_entry = Unpooled.wrappedBuffer(new byte[CACHE_SIZE+1]);
+		null_entry = null;
+		
+		
+		List<ReadCacheParameters> testInputs = new ArrayList<>();
+		
+		// ledgerId / entryId / entry
+		testInputs.add(new ReadCacheParameters(1,0,valid_entry,null));
+		testInputs.add(new ReadCacheParameters(0,1,illegal_entry,IndexOutOfBoundsException.class));
+		testInputs.add(new ReadCacheParameters(1,-1,null_entry,NullPointerException.class));
+		testInputs.add(new ReadCacheParameters(-1,1,valid_entry,IllegalArgumentException.class));
+		
+		return testInputs;
+    }
 
-	// Permette di specificare l'eccezione attesa.
-	@Rule
-	public ExpectedException exceptionRule = ExpectedException.none();
 	
 	
-	// Configuro l'ambiente di esecuzione istanziando una nuova ReadCache prima di ogni test.
+	// Configuro l'ambiente di esecuzione istanziando una nuova ReadCache ed inserendo un'entry da ottenere
 	@Before
 	public void configure() {
 		UnpooledByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 		cache = new ReadCache(allocator,CACHE_SIZE);
+		cache.put(ledgerId, entryId, entry);
 	}
 	
 	
@@ -70,46 +91,9 @@ public class ReadCacheTest {
 		cache.close();
 	}
 	
-	
-    @Parameters
-    public static Collection<ReadCacheParameters> getParameters() {
-    	
-		// Setup of the entries
-		valid_entry = Unpooled.wrappedBuffer(new byte[ENTRY_SIZE]);
-		illegal_entry = Unpooled.wrappedBuffer(new byte[CACHE_SIZE+1]);
-		null_entry = null;
-        
-		List<ReadCacheParameters> testInputs = new ArrayList<>();
-		testInputs.add(new ReadCacheParameters(1,0,valid_entry,null));
-		testInputs.add(new ReadCacheParameters(0,1,illegal_entry,IndexOutOfBoundsException.class));
-		testInputs.add(new ReadCacheParameters(1,-1,null_entry,NullPointerException.class));
-		testInputs.add(new ReadCacheParameters(-1,1,valid_entry,IllegalArgumentException.class));
-		
-		return testInputs;
-    }
-    
-    
-    
-	@Test
-	public void putTest() {
-		
-		if (expectedException != null) {
-			exceptionRule.expect(expectedException);
-		}
-		cache.put(ledgerId, entryId, entry);
-
-		assertEquals(1, cache.count()); 				// Vediamo che abbiamo esattamente un'entry
-		assertEquals(ENTRY_SIZE, cache.size()); 		// Vediamo che la dimensione totale è data dalla dimensione dell'unica entry aggiunta
-	}
-
-	// TODO mettere in un file di test separato
 	@Test
 	public void getTest() {
-        if(expectedException != null) {
-        	exceptionRule.expect(expectedException);
-        }
 		
-        cache.put(ledgerId, entryId, entry);
 		ByteBuf expectedValue = entry;
 		ByteBuf actualValue = cache.get(ledgerId, entryId);
 		assertEquals(expectedValue, actualValue);			// Verifichiamo che il valore ottenuto dal get è uguale a quello inserito con il put
