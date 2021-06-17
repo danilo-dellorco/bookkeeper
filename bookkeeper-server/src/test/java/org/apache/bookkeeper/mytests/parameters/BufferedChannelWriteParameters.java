@@ -4,6 +4,7 @@ package org.apache.bookkeeper.mytests.parameters;
 public class BufferedChannelWriteParameters {
     private int entrySize;
     private int writeBuffCapacity;
+    private long unpersistedBytesBound;
     private Class<? extends Exception> expectedException;
 
     
@@ -12,11 +13,26 @@ public class BufferedChannelWriteParameters {
      * @param writeBuffCapacity dimensione del buffer di scrittura
      * @param buffChanCapacity capacità del BufferChannel
      */
-    public BufferedChannelWriteParameters( int writeBuffCapacity, int entrySize, Class<? extends Exception> expectedException) {
+    public BufferedChannelWriteParameters( int writeBuffCapacity, int entrySize, long unpersistedBytesBound, Class<? extends Exception> expectedException) {
         this.writeBuffCapacity = writeBuffCapacity;
         this.entrySize = entrySize;
+        this.unpersistedBytesBound = unpersistedBytesBound;
         this.expectedException = expectedException;
     }
+
+    
+    
+	public long getUnpersistedBytesBound() {
+		return unpersistedBytesBound;
+	}
+
+
+
+	public void setUnpersistedBytesBound(int unpersistedBytesBound) {
+		this.unpersistedBytesBound = unpersistedBytesBound;
+	}
+
+
 
 	public int getWriteBuffCapacity() {
 		return writeBuffCapacity;

@@ -31,10 +31,13 @@ public class BufferedChannelWriteTest {
 	private int entrySize;						// Dimensione dell'entry usata per la scrittura
 	private int writeBuffCapacity;				// Capacità assegnata al writeBuffer (e al readBuffer)
 	
-
 	private FileChannel fileChannel; 			// Canale per leggere, scrivere e manipolare i file.
 	private RandomAccessFile randomAccess;		// File utilizzato per istanziare il FileChannel
 	private byte[] randomBytes;					// Array di byte generato randomicamente per testare la scrittura
+
+	// Aggiunti dopo il miglioramento della TestSuite
+	private long unpersistedBytesBound;			// Limite di bytes che possono essere mantenuti senza persistenza (flush) sul file
+	private boolean noException = true;			// Utilizzato per chiudere correttamente file e canali
 	
 	
 	
@@ -44,31 +47,35 @@ public class BufferedChannelWriteTest {
 	
 
 	public BufferedChannelWriteTest(BufferedChannelWriteParameters testInput) {
-		
 		this.entrySize = testInput.getEntrySize();
 		this.writeBuffCapacity = testInput.getWriteBuffCapacity();
+		this.unpersistedBytesBound = testInput.getUnpersistedBytesBound();
 		if (testInput.getExpectedException()!=null) {
 			expectedException.expect(testInput.getExpectedException());
+			this.noException = false;
 		}
-		System.out.println(String.format("\n\n========= Capacity: %d / EntrySize: %d ==========\n", this.writeBuffCapacity,this.entrySize));
 	}
 
 	@Parameterized.Parameters
 	public static Collection<BufferedChannelWriteParameters> getParameters() {
 		List<BufferedChannelWriteParameters> testInputs = new ArrayList<>();
 		
-		// WriteCapacity / Entry Size / Exception
-		testInputs.add(new BufferedChannelWriteParameters(-1, 1, IllegalArgumentException.class));		
-		testInputs.add(new BufferedChannelWriteParameters(1, -1, NegativeArraySizeException.class));		
-		testInputs.add(new BufferedChannelWriteParameters(1, 0, null));
-		testInputs.add(new BufferedChannelWriteParameters(3, 2, null));
-		testInputs.add(new BufferedChannelWriteParameters(2, 3, null));
-		testInputs.add(new BufferedChannelWriteParameters(3000, 2000, null));
-		testInputs.add(new BufferedChannelWriteParameters(2000, 3000, null));
+		// WriteCapacity / Entry Size / UnpersistedBytesBound / Exception
+		testInputs.add(new BufferedChannelWriteParameters(-1, 1, 0, IllegalArgumentException.class));		
+		testInputs.add(new BufferedChannelWriteParameters(1, -1, 0, NegativeArraySizeException.class));		
+		testInputs.add(new BufferedChannelWriteParameters(1, 0, 0, null));
+		testInputs.add(new BufferedChannelWriteParameters(3, 2, 0, null));
+		testInputs.add(new BufferedChannelWriteParameters(2, 3, 0, null));
 		
-		// Questo test fallisce, probabilmente writeCapacity = 0 non è un valore ammissibile ma non viene gestito correttamente durante la scrittura
-		// testInputs.add(new BufferedChannelWriteParameters(0, 1, null));	
+		// Aggiunti dopo il miglioramento della TestSuite
+		testInputs.add(new BufferedChannelWriteParameters(6, 4, 3L, null));
+		testInputs.add(new BufferedChannelWriteParameters(6, 4, 5L, null));
 		return testInputs;
+		
+		/*
+		 *  Questo test fallisce, probabilmente writeCapacity = 0 non è un valore ammissibile ma non viene gestito correttamente durante la scrittura
+		 */
+		// testInputs.add(new BufferedChannelWriteParameters(0, 1, 0, null));	
 	}
 
 	@BeforeClass
@@ -94,13 +101,13 @@ public class BufferedChannelWriteTest {
 		
 		// Genero una nuova entry della dimensione specificata
 		this.srcBuffer = generateRandomEntry(this.entrySize);
-		System.out.println("Bytes random generati (srcBuffer): " + Arrays.toString(this.randomBytes));
 	}
 
 	@After
 	public void clear() throws IOException {
+		
 		// Chiudo canali e file aperti soltanto se sono stati effettivamente aperti
-		if (expectedException==null) {
+		if (this.noException) {
 			this.randomAccess.close();
 			this.bufferedChannel.clear();
 			this.bufferedChannel.close();
@@ -115,8 +122,7 @@ public class BufferedChannelWriteTest {
 		String[] entries = directory.list();
 		for(String s: entries){
 		    File currentFile = new File(directory.getPath(),s);
-		    boolean deleted = currentFile.delete();
-		    System.out.println(deleted);
+		    currentFile.delete();
 		}
 		directory.delete();
 	}
@@ -125,9 +131,7 @@ public class BufferedChannelWriteTest {
 	@Test(timeout = 500)
 	public void WriteTest() throws Exception{
 		UnpooledByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
-		bufferedChannel = new BufferedChannel(allocator, fileChannel, writeBuffCapacity);
-		
-		// Scrivo tutti i byte di srcBuffer all'interno del bufferedChannel
+		bufferedChannel = new BufferedChannel(allocator, fileChannel, writeBuffCapacity, unpersistedBytesBound);
 		bufferedChannel.write(srcBuffer);
 
 		
@@ -139,11 +143,8 @@ public class BufferedChannelWriteTest {
 		 *  
 		 *  Altrimenti nel writeBuffer avrò tutti i byte dell'entry
 		 */
-		
 		int numBytesInWriteBuff = 0;
 		int numBytesInFileChannel = 0;
-		System.out.println("EntrySize: " + entrySize);
-		System.out.println("WriteBuff: " + writeBuffCapacity);
 		if (entrySize > writeBuffCapacity) {
 			int numFlush = entrySize/writeBuffCapacity;					// Numero di flush sul file che sono stati effettuati
 			numBytesInFileChannel = numFlush * writeBuffCapacity;
@@ -152,9 +153,6 @@ public class BufferedChannelWriteTest {
 		else {
 			numBytesInWriteBuff = entrySize;
 		}
-
-		System.out.println("NumBytes in WriteBuff: " + numBytesInWriteBuff);
-		System.out.println("NumBytes in FileChannel: " + numBytesInFileChannel);
 		
 		// Ottengo i bytes che ho scritto nel WriteBuffer, inserendoli in un array di bytes bytesInWriteBuf
 		byte[] bytesInWriteBuff = new byte[numBytesInWriteBuff];	
@@ -163,14 +161,14 @@ public class BufferedChannelWriteTest {
 		
 		// Ottengo i byte che dovrebbero essere nel WriteBuf come il totale dei bytes random generati togliendo il numero di bytes che sono in writeBuf
 		byte[] expectedBytes = Arrays.copyOfRange(this.randomBytes, this.randomBytes.length - numBytesInWriteBuff, this.randomBytes.length);
-
-		
-		System.out.println("Bytes presenti nel WriteBuffer: "+Arrays.toString(bytesInWriteBuff));
-		System.out.println("Bytes attesi nel WriteBuffer: "+Arrays.toString(expectedBytes));
 		
 		// Verifico che i bytes scritti siano correttamente contenuti nel writeBuffer
 		Assert.assertEquals(Arrays.toString(expectedBytes),Arrays.toString(bytesInWriteBuff));
 		
+		
+		/*
+		 *	Flush sul file 
+		 */	
 		
 		// Leggo i bytes nel file channel e li scrivo all'interno di un ByteBuffer buff
 		ByteBuffer buff = ByteBuffer.allocate(numBytesInFileChannel);
@@ -180,9 +178,6 @@ public class BufferedChannelWriteTest {
 		// Ottengo i bytes attesi nel file channel come i primi 'numBytesInFileChannel' tra quelli generati
 		byte[] bytesInFileChannel = buff.array();
 		expectedBytes = Arrays.copyOfRange(this.randomBytes, 0, numBytesInFileChannel);
-
-		System.out.println("Bytes nel FileChannel: "+Arrays.toString(bytesInFileChannel));
-		System.out.println("Bytes attesi nel FileChannel: "+Arrays.toString(expectedBytes));
 
 		// Verifico che eventuali bytes scritti tramite flush siano correttamente contenuti nel FileChannel
 		Assert.assertEquals(Arrays.toString(expectedBytes), Arrays.toString(bytesInFileChannel));

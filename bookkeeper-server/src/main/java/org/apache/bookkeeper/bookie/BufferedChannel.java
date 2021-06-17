@@ -121,14 +121,9 @@ public class BufferedChannel extends BufferedReadChannel implements Closeable {
         boolean shouldForceWrite = false;
         synchronized (this) {
             int len = src.readableBytes();
-//            System.out.println("len: "+len);
             while (copied < len) {
                 int bytesToCopy = Math.min(src.readableBytes() - copied, writeBuffer.writableBytes());
-//                System.out.println("bytesToCopy: "+bytesToCopy);
                 writeBuffer.writeBytes(src, src.readerIndex() + copied, bytesToCopy);
-//                byte[] dest = new byte [bytesToCopy];
-//                writeBuffer.getBytes(0, dest);
-//                System.out.println(Arrays.toString(dest));
                 copied += bytesToCopy;
 
                 // if we have run out of buffer space, we should flush to the

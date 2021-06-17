@@ -1,38 +1,30 @@
 package org.apache.bookkeeper.mytests.parameters;
 
-import org.junit.rules.ExpectedException;
-
 public class BufferedChannelReadParameters {
-	int testNum;			// Parametro di debug
 	int fileSize;
 	int startIndex;
 	int readLenght;
 	int buffSize;
+	boolean doWrite;
 	Class<? extends Exception> expectedException;
 	
 
-	public BufferedChannelReadParameters(int testNum, int fileSize, int startIndex, int readLenght, int buffSize, Class<? extends Exception> expectedException) {
-		this.testNum = testNum;
+	public BufferedChannelReadParameters(int fileSize, int startIndex, int readLenght, int buffSize, boolean doWrite, Class<? extends Exception> expectedException) {
 		this.fileSize = fileSize;
 		this.startIndex = startIndex;
 		this.readLenght = readLenght;
 		this.buffSize = buffSize;
+		this.doWrite = doWrite;
 		this.expectedException = expectedException;
 	}
-	
-	
 
-	public int getTestNum() {
-		return testNum;
+	public boolean doWrite() {
+		return doWrite;
 	}
 
-
-
-	public void setTestNum(int testNum) {
-		this.testNum = testNum;
+	public void setDoWrite(boolean doWrite) {
+		this.doWrite = doWrite;
 	}
-
-
 
 	public int getFileSize() {
 		return fileSize;
@@ -42,8 +34,6 @@ public class BufferedChannelReadParameters {
 		this.fileSize = fileSize;
 	}
 	
-	
-
 	public int getStartIndex() {
 		return startIndex;
 	}

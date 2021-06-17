@@ -26,9 +26,6 @@ public class BufferedChannelReadTest {
 
 	private static final String TMP_DIR = "testTemp";
 	private static final String TMP_FILE = "BfcReadFile";
-	
-	private int testNum;
-
 
 	private int fileSize;
 	private int startIndex;
@@ -38,19 +35,24 @@ public class BufferedChannelReadTest {
     private FileChannel fileChannel;
     private BufferedChannel bufferedChannel;
     private byte[] randomBytes;
+    
+    // Aggiunto dopo miglioramento TestSuite
+    private boolean doWrite;
+    private boolean noException = true;
 
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
     public BufferedChannelReadTest(BufferedChannelReadParameters testInputs) {
-    	this.testNum = testInputs.getTestNum();
     	this.fileSize = testInputs.getFileSize();
     	this.startIndex = testInputs.getStartIndex();
     	this.readLength = testInputs.getReadLenght();
     	this.buffSize = testInputs.getBuffSize();
+    	this.doWrite = testInputs.doWrite();
     	if (testInputs.getExpectedException() != null) {
     		expectedException.expect(testInputs.getExpectedException());
+    		this.noException = false;
     	}
     }
 
@@ -61,22 +63,26 @@ public class BufferedChannelReadTest {
         List<BufferedChannelReadParameters> testInputs = new ArrayList<>();
         
         // File Size / Start Index / Read Length / Buffer Size / Expected Exception
-        testInputs.add(new BufferedChannelReadParameters(0, -1, 0, 0, 0, NegativeArraySizeException.class));
-        testInputs.add(new BufferedChannelReadParameters(1, 0, -1, 0, 0, ArrayIndexOutOfBoundsException.class));
-        testInputs.add(new BufferedChannelReadParameters(2, 0, 0, -1, 0, IllegalArgumentException.class));
-        testInputs.add(new BufferedChannelReadParameters(2, 0, 0, 0, -1, IllegalArgumentException.class));
-        testInputs.add(new BufferedChannelReadParameters(2, 0, 0, 0, 0, null));
-        testInputs.add(new BufferedChannelReadParameters(4, 1, 0, 2, 1, IOException.class));
-        testInputs.add(new BufferedChannelReadParameters(4, 3, 0, 2, 3, null));
-        testInputs.add(new BufferedChannelReadParameters(5, 3, 1, 2, 3, null));
-        testInputs.add(new BufferedChannelReadParameters(7, 5000, 2000, 3000, 1500, null));
-        testInputs.add(new BufferedChannelReadParameters(8, 5000, 2000, 3001, 1500, IOException.class));
+        testInputs.add(new BufferedChannelReadParameters(-1, 0, 0, 0, false, NegativeArraySizeException.class));
+        testInputs.add(new BufferedChannelReadParameters(0, -1, 0, 0, false, ArrayIndexOutOfBoundsException.class));
+        testInputs.add(new BufferedChannelReadParameters(0, 0, -1, 0, false, IllegalArgumentException.class));
+        testInputs.add(new BufferedChannelReadParameters(0, 0, 0, -1, false, IllegalArgumentException.class));
+        testInputs.add(new BufferedChannelReadParameters(0, 0, 0, 0, false ,null));
+        testInputs.add(new BufferedChannelReadParameters(1, 0, 2, 1, false, IOException.class));
+        testInputs.add(new BufferedChannelReadParameters(3, 0, 2, 3, false, null));
+        testInputs.add(new BufferedChannelReadParameters(3, 1, 2, 3, false, null));
+        
+        // Aggiunto dopo miglioramento TestSuite
+        testInputs.add(new BufferedChannelReadParameters(5, 9, 3, 2, true, IOException.class));
+        
+        // Aggiunto dopo mutation testing
+        testInputs.add(new BufferedChannelReadParameters(5, 0, 6, 0, false, IOException.class));
+        
         return testInputs;
     }
 
     @BeforeClass
     static public void configureEnvironment() {
-    	
 		// Se non esiste, creo la directory tmp in cui verrà inserito il file di log
 		if (!Files.exists(Paths.get(TMP_DIR))) {
 			File tmp = new File(TMP_DIR);
@@ -86,14 +92,7 @@ public class BufferedChannelReadTest {
 
     
     @Before
-    public void configure() throws IOException {
-    	String debug = String.format("\n\n================ Test [%d] ================ ", testNum);
-    	System.out.println(debug);
-    	System.out.println("file size: " + this.fileSize);
-    	System.out.println("read length: " + this.readLength);
-    	System.out.println("start index: " + this.startIndex);
-    	System.out.println("==========================================");
-    	
+    public void configure() throws IOException {    	
     	generateRandomFile(this.fileSize);
     	Path filePath = Paths.get(TMP_DIR,TMP_FILE);
         this.fileChannel = FileChannel.open(filePath, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
@@ -104,7 +103,8 @@ public class BufferedChannelReadTest {
 	@After
 	public void clear() throws IOException {
 		// Chiudo canali e file aperti soltanto se sono stati effettivamente aperti
-		if (expectedException==null) {
+		if (this.noException) {
+			this.bufferedChannel.clear();
 			this.bufferedChannel.close();
 			this.fileChannel.close();
 		}
@@ -127,21 +127,24 @@ public class BufferedChannelReadTest {
 
     	UnpooledByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
     	this.bufferedChannel = new BufferedChannel(allocator, this.fileChannel, this.buffSize);
-    	
         ByteBuf readDestBuff = Unpooled.buffer();
         
         // Imposto la dimensione del buffer di destinazione della read pari al numero di bytes che voglio leggere
         readDestBuff.capacity(readLength);
-
+        
+        // Aggiunto dopo il miglioramento della TestSuite
+        if (this.doWrite) {
+        	writeInWriteBuff();
+        }
+        
         // Read ritorna il numero di byte letti dal bufferedChannel
         int numReadBytes = this.bufferedChannel.read(readDestBuff, this.startIndex,this.readLength);
         System.out.println("Eseguita lettura | Num Bytes letti: " + numReadBytes);
         
         // Ottengo l'array dei bytes letti tramite il buffer di destinazione passato alla read
-        byte[] bytesRead = readDestBuff.array(); 
-        System.out.println("Bytes Letti: " + Arrays.toString(bytesRead));
+        byte[] bytesRead = readDestBuff.array();         
         
-        
+        // Calcolo il numero di bytes attesi in base a readLength,fileSize e startIndex
         int numBytesExpected = 0;
         if (this.fileSize - this.startIndex >= this.readLength) {
         	numBytesExpected = this.readLength;
@@ -149,26 +152,34 @@ public class BufferedChannelReadTest {
         else {
         	numBytesExpected =  this.randomBytes.length - this.startIndex - this.readLength;
         }
-        
-        System.out.println("numBytesExpected: " + numBytesExpected);
         byte[] expectedBytes = Arrays.copyOfRange(this.randomBytes, this.startIndex, this.startIndex + numBytesExpected);
-        System.out.println("BytesExpected: "+Arrays.toString(expectedBytes));
 
         Assert.assertEquals(Arrays.toString(expectedBytes), Arrays.toString(bytesRead));
     }
     
+    
+    /*
+     * Aggiunto dopo il miglioramento della TestSuite
+	 * Permette di scrivere direttamente sul writeBuffer prima di effettuare la lettura
+     */
+    private void writeInWriteBuff() throws IOException {
+        ByteBuf writeBuf = Unpooled.buffer();
+        writeBuf.writeBytes(this.randomBytes);
+        this.bufferedChannel.write(writeBuf);
+    }
+    
+    
+    /*
+     *  Genera un file di dimensione 'size' contenente bytes generati randomicamente
+     */
 	private void generateRandomFile(int size) throws IOException {
-		// Genero un numero random di bytes e li inserisco dentro l'array 'bytes'
 		this.randomBytes = new byte[size];
 		Random rd = new Random();
 		rd.nextBytes(randomBytes);
 		
-		// Scrivo i bytes generati all'interno del File Generato
         FileOutputStream fileStream = new FileOutputStream(TMP_DIR+"/"+TMP_FILE);
         fileStream.write(this.randomBytes);
         fileStream.close();
-
-        System.out.println("Bytes Generati: "+Arrays.toString(randomBytes));
 	}
 
 

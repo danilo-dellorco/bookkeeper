@@ -60,6 +60,8 @@ public class ReadCacheGetTest {
 		// Setup of the entries
 		valid_entry = Unpooled.wrappedBuffer(new byte[ENTRY_SIZE]);
 		illegal_entry = Unpooled.wrappedBuffer(new byte[CACHE_SIZE+1]);
+		valid_entry.writerIndex(valid_entry.capacity());
+		illegal_entry.writerIndex(illegal_entry.capacity());
 		null_entry = null;
 		
 		
