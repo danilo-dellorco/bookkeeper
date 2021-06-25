@@ -68,8 +68,8 @@ public class BufferedChannelWriteTest {
 		testInputs.add(new BufferedChannelWriteParameters(2, 3, 0, null));
 		
 		// Aggiunti dopo il miglioramento della TestSuite
-		testInputs.add(new BufferedChannelWriteParameters(6, 4, 3L, null));
-		testInputs.add(new BufferedChannelWriteParameters(6, 4, 5L, null));
+		testInputs.add(new BufferedChannelWriteParameters(6000, 4000, 3000L, null));
+		testInputs.add(new BufferedChannelWriteParameters(6000, 4000, 5000L, null));
 		return testInputs;
 		
 		/*

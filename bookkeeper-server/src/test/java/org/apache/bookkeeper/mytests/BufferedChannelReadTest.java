@@ -69,14 +69,14 @@ public class BufferedChannelReadTest {
         testInputs.add(new BufferedChannelReadParameters(0, 0, 0, -1, false, IllegalArgumentException.class));
         testInputs.add(new BufferedChannelReadParameters(0, 0, 0, 0, false ,null));
         testInputs.add(new BufferedChannelReadParameters(1, 0, 2, 1, false, IOException.class));
-        testInputs.add(new BufferedChannelReadParameters(3, 0, 2, 3, false, null));
-        testInputs.add(new BufferedChannelReadParameters(3, 1, 2, 3, false, null));
+        testInputs.add(new BufferedChannelReadParameters(3, 0, 2, 2, false, null));
+        testInputs.add(new BufferedChannelReadParameters(3, 1, 2, 2, false, null));
         
         // Aggiunto dopo miglioramento TestSuite
         testInputs.add(new BufferedChannelReadParameters(5, 9, 3, 2, true, IOException.class));
         
         // Aggiunto dopo mutation testing
-        testInputs.add(new BufferedChannelReadParameters(5, 0, 6, 0, false, IOException.class));
+        testInputs.add(new BufferedChannelReadParameters(5, 1, 6, 0, false, IOException.class));
         
         return testInputs;
     }
@@ -93,10 +93,18 @@ public class BufferedChannelReadTest {
     
     @Before
     public void configure() throws IOException {    	
-    	generateRandomFile(this.fileSize);
+		generateRandomFile(this.fileSize);
     	Path filePath = Paths.get(TMP_DIR,TMP_FILE);
         this.fileChannel = FileChannel.open(filePath, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
         this.fileChannel.position(this.fileChannel.size());
+        
+    	UnpooledByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
+    	this.bufferedChannel = new BufferedChannel(allocator, this.fileChannel, this.buffSize);
+    	
+        // Aggiunto dopo il miglioramento della TestSuite
+        if (this.doWrite) {
+        	writeInWriteBuff();
+        }
     }
 
     
@@ -124,18 +132,9 @@ public class BufferedChannelReadTest {
 	
     @Test
     public void ReadTest() throws Exception {
-
-    	UnpooledByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
-    	this.bufferedChannel = new BufferedChannel(allocator, this.fileChannel, this.buffSize);
         ByteBuf readDestBuff = Unpooled.buffer();
-        
         // Imposto la dimensione del buffer di destinazione della read pari al numero di bytes che voglio leggere
         readDestBuff.capacity(readLength);
-        
-        // Aggiunto dopo il miglioramento della TestSuite
-        if (this.doWrite) {
-        	writeInWriteBuff();
-        }
         
         // Read ritorna il numero di byte letti dal bufferedChannel
         int numReadBytes = this.bufferedChannel.read(readDestBuff, this.startIndex,this.readLength);

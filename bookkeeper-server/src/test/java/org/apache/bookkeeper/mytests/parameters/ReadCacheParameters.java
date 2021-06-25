@@ -4,45 +4,43 @@ import io.netty.buffer.ByteBuf;
 
 public class ReadCacheParameters {
 	
-	int ledgerId;
-	int entryId;
-	ByteBuf entry;
+	long ledgerId;
+	long entryId;
+	ByteBuf expectedResult;
 	Class<? extends Exception> expectedException;
 
 	// Costruttore
-	public ReadCacheParameters(int ledgerId, int entryId, ByteBuf entry, Class<? extends Exception> expectedException) {
+	public ReadCacheParameters(long ledgerId, long entryId, Class<? extends Exception> expectedException) {
 		this.ledgerId = ledgerId;
 		this.entryId = entryId;
-		this.entry = entry;
 		this.expectedException = expectedException;
+	}
+	
+	// Costruttore
+	public ReadCacheParameters(long ledgerId, long entryId, ByteBuf expectedResult) {
+		this.ledgerId = ledgerId;
+		this.entryId = entryId;
+		this.expectedResult = expectedResult;
 	}
 	
 	
 	/*
 	 * Getters & Setters
 	 */
-	public int getLedgerId() {
+	public long getLedgerId() {
 		return ledgerId;
 	}
 
-	public void setLedgerId(int ledgerId) {
+	public void setLedgerId(long ledgerId) {
 		this.ledgerId = ledgerId;
 	}
 
-	public int getEntryId() {
+	public long getEntryId() {
 		return entryId;
 	}
 
-	public void setEntryId(int entryId) {
+	public void setEntryId(long entryId) {
 		this.entryId = entryId;
-	}
-
-	public ByteBuf getEntry() {
-		return entry;
-	}
-
-	public void setEntry(ByteBuf entry) {
-		this.entry = entry;
 	}
 
 	public Class<? extends Exception> getExpectedException() {
@@ -52,5 +50,11 @@ public class ReadCacheParameters {
 	public void setExpectedException(Class<? extends Exception> expectedException) {
 		this.expectedException = expectedException;
 	}
+
+	public ByteBuf getExpectedResult() {
+		return expectedResult;
+	}
+	
+	
 
 }

@@ -1,7 +1,6 @@
 package org.apache.bookkeeper.mytests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -92,9 +91,12 @@ public class ReadCachePutTest {
 		
 		// ledgerId / entryId / entry
 		testInputs.add(new ReadCachePutParameters(1,0,valid_entry,false,null));
+		testInputs.add(new ReadCachePutParameters(0,-1,valid_entry,false,null));
 		testInputs.add(new ReadCachePutParameters(0,1,illegal_entry,false,IndexOutOfBoundsException.class));
 		testInputs.add(new ReadCachePutParameters(1,-1,null_entry,false,NullPointerException.class));
 		testInputs.add(new ReadCachePutParameters(-1,1,valid_entry,false,IllegalArgumentException.class));
+		
+		// Aggiunto dopo il miglioramento della test suite
 		testInputs.add(new ReadCachePutParameters(1,0,valid_entry,true,null));
 		
 		return testInputs;
