@@ -10,6 +10,7 @@ import org.apache.bookkeeper.bookie.storage.ldb.ReadCache;
 import org.apache.bookkeeper.mytests.parameters.ReadCachePutParameters;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -30,6 +31,9 @@ public class ReadCachePutTest {
 	public static int ENTRY_SIZE = 1024;					// Ogni entry viene ha dimensione 1024 byte
 	public static int MAX_ENTRIES = 50;						// Ogni cache può contenere al massimo 10 entry
 	public static int CACHE_SIZE = ENTRY_SIZE*MAX_ENTRIES;	// Massimo numero di byte che può contenere la cache
+//	public static int SEGM_SIZE = 512;						// Massimo numero di byte che può contenere un segmento
+	
+	
 	
 	
 	// Types of entries
@@ -68,6 +72,7 @@ public class ReadCachePutTest {
 	public void configure() {
 		UnpooledByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 		cache = new ReadCache(allocator,CACHE_SIZE);
+//		cache = new ReadCache(allocator, CACHE_SIZE, SEGM_SIZE); scartato a seguito delle considerazioni sull'effort
 	}
 	
 	// Chiudo la cache dopo aver eseguito tutti i test case
@@ -76,18 +81,19 @@ public class ReadCachePutTest {
 		cache.close();
 	}
 	
-    @Parameters
-    public static Collection<ReadCachePutParameters> getParameters() {
-    	
-		// Setup of the entries
+	// Configuro le varie tipologie di entry considerate
+	public static void configureEntries() {
 		valid_entry = Unpooled.wrappedBuffer(new byte[ENTRY_SIZE]);
 		illegal_entry = Unpooled.wrappedBuffer(new byte[CACHE_SIZE+1]);
 		valid_entry.writerIndex(valid_entry.capacity());
 		illegal_entry.writerIndex(illegal_entry.capacity());
 		null_entry = null;
-		
-		
+	}
+	
+    @Parameters
+    public static Collection<ReadCachePutParameters> getParameters() {
 		List<ReadCachePutParameters> testInputs = new ArrayList<>();
+		configureEntries();
 		
 		// ledgerId / entryId / entry
 		testInputs.add(new ReadCachePutParameters(1,0,valid_entry,false,null));
@@ -101,7 +107,6 @@ public class ReadCachePutTest {
 		
 		return testInputs;
     }
-    
     
     
 	@Test

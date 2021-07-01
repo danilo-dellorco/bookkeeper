@@ -147,8 +147,8 @@ public class BufferedChannelWriteTest {
 		int numBytesInFileChannel = 0;
 		if (entrySize > writeBuffCapacity) {
 			int numFlush = entrySize/writeBuffCapacity;					// Numero di flush sul file che sono stati effettuati
-			numBytesInFileChannel = numFlush * writeBuffCapacity;
-			numBytesInWriteBuff = entrySize - numBytesInFileChannel;
+			numBytesInFileChannel = numFlush * writeBuffCapacity;		
+			numBytesInWriteBuff = entrySize - numBytesInFileChannel;	
 		}
 		else {
 			numBytesInWriteBuff = entrySize;
