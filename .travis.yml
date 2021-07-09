@@ -8,7 +8,4 @@ addons:
     token: "e4d37704cd412c1af3d3adf98b7e3b12766ef48b"
 
 script:
-  - mvn "-Dtest=org/apache/bookkeeper/mytests/*Test" -DfailIfNoTests=false clean verify -e org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar -Dsonar.projectKey=danilo-dellorco_bookkeeper 
-
-  # -Dsonar.host.url=https://sonarcloud.io
-  # -e org.jacoco:jacoco-maven-plugin:prepare-agent
+  - mvn "-Dtest=org/apache/bookkeeper/mytests/*Test" -DfailIfNoTests=false clean verify -e org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar -Dsonar.projectKey=danilo-dellorco_bookkeeper
